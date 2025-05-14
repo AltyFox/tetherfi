@@ -17,13 +17,14 @@
 package com.pyamsoft.tetherfi.main
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -45,9 +46,9 @@ import com.pyamsoft.tetherfi.service.ServiceLauncher
 import com.pyamsoft.tetherfi.tile.ProxyTileService
 import com.pyamsoft.tetherfi.ui.InstallPYDroidExtras
 import com.pyamsoft.tetherfi.ui.LANDSCAPE_MAX_WIDTH
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 class MainActivity : AppCompatActivity() {
 
@@ -64,7 +65,6 @@ class MainActivity : AppCompatActivity() {
         installPYDroid(
             provider =
                 object : ChangeLogProvider {
-
                   override val applicationIcon = R.mipmap.ic_launcher
 
                   override val changelog = buildChangeLog {
@@ -101,9 +101,8 @@ class MainActivity : AppCompatActivity() {
   }
 
   private fun safeOpenSettingsIntent(action: String) {
-    // Try specific first, may fail on some devices
     try {
-      val intent = Intent(action, "package:${packageName}".toUri())
+      val intent = Intent(action, "package:$packageName".toUri())
       startActivity(intent)
     } catch (e: Throwable) {
       Timber.e(e) { "Failed specific intent for $action" }
@@ -119,6 +118,20 @@ class MainActivity : AppCompatActivity() {
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
+    // LOCK SCREEN: show activity and turn on screen
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+      setShowWhenLocked(true)
+      setTurnScreenOn(true)
+    } else {
+      window.addFlags(
+          WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+              WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+      )
+    }
+
+    // Optional: dismiss lock screen if allowed
+    window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
+
     super.onCreate(savedInstanceState)
     setupActivity()
 
@@ -166,7 +179,6 @@ class MainActivity : AppCompatActivity() {
     super.onResume()
     reportFullyDrawn()
 
-    // Cancel any old notifications
     notificationErrorLauncher?.also { l ->
       lifecycleScope.launch(context = Dispatchers.Default) { l.hideError() }
     }
