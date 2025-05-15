@@ -11,9 +11,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          repository: pyamsoft/tetherfi
-          ref: 11dd7595fa94c2ac80da88b42d5c255c303e3109
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -25,10 +22,6 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.14'  
-
-      - name: Download release.keystore.gpg
-        run: |
-          curl -L -o release.keystore.gpg https://github.com/AltyFox/tetherfi/raw/refs/heads/main/release.keystore.gpg
 
       - name: Decrypt release.keystore.gpg
         run: |
@@ -48,7 +41,6 @@ jobs:
 
       - name: Write verification metadata
         run: ./gradlew --write-verification-metadata sha256,pgp clean
-
 
       - name: Clone KTOR repository
         run: |
