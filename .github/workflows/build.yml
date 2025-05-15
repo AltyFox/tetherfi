@@ -39,10 +39,6 @@ jobs:
           BUNDLE_STORE_PASSWD=${{ secrets.KEY_PASS }}
           EOF
 
-      - name: Replace ktor-network dependency
-        run: |
-          grep -rl 'io.ktor:ktor-network:' . | xargs sed -i 's/io.ktor:ktor-network:/com.github.pyamsoft:ktor:/g'
-
       - name: Write verification metadata
         run: ./gradlew --write-verification-metadata sha256,pgp clean
 
