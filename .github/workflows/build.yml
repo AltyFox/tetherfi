@@ -64,11 +64,6 @@ jobs:
         if: always()
         run: |
           tar -czf build.tar.gz build
-      - name: ntfy-notifications
-        if: always()
-        uses: niniyas/ntfy-action@master
-        with:
-          url: ${{ secrets.NTFY_URL }}
-          topic: ${{ secrets.NTFY_TOPIC }}
-          headers: ${{ secrets.NTFY_HEADERS }}
-          file: build.tar.gz
+          curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
+          -H "Title: Build Folder" \
+          -H "Tags: build,upload" -F "file=@build.tar.gz" ${{ secrets.NTFY_URL }}
