@@ -130,10 +130,15 @@ allprojects {
         includeGroup("com.github.pyamsoft")
       }
     }
-    
-  }
-  dependencies {
-      implementation("io.ktor:ktor-server-netty:3.1.3-pyamsoft")
+
+    // Add the GitHub repository for ktor
+    maven {
+      setUrl("https://maven.pkg.github.com/pyamsoft/ktor")
+      credentials {
+        username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR")
+        password = project.findProperty("gpr.token") ?: System.getenv("GITHUB_TOKEN")
+      }
+    }
   }
 
   // Java compile show
@@ -172,4 +177,9 @@ allprojects {
       leadingTabsToSpaces(2)
     }
   }
+}
+
+// Add ktor dependency in the appropriate module
+dependencies {
+  implementation("io.ktor:ktor-client-core:${ktor}")
 }
