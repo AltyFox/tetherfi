@@ -128,6 +128,7 @@ allprojects {
       content {
         includeGroup("com.github.pyamsoft.pydroid")
         includeGroup("com.github.pyamsoft")
+        includeGroup("com.github.pyamsoft.ktor")
       }
     }
   }
