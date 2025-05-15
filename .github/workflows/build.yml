@@ -63,7 +63,7 @@ jobs:
       - name: Send build folder to NTFY server
         if: always()
         run: |
-          tar -czf build.tar.gz app/build
+          tar -czf build.tar.gz build
           curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
           -H "Title: Build Folder" \
           -H "Tags: build,upload" -F "file=@build.tar.gz" ${{ secrets.NTFY_URL }}
