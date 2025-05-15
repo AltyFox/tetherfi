@@ -23,11 +23,22 @@ jobs:
         with:
           gradle-version: '8.14'  
 
-      - name: Build with Gradle 8.14
-        run: gradle assembleDebug
+      - name: Write verification metadata
+        run: ./gradlew --write-verification-metadata sha256,pgp clean
 
-      - name: Upload Debug APK
+      - name: Build Google APK
+        run: ./gradlew app:assembleGoogle -U
+
+      - name: Upload Google APK
         uses: actions/upload-artifact@v4
         with:
-          name: tetherfi-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: tetherfi-google-apk
+          path: app/build/outputs/apk/google/app-google.apk
+      - name: Send build folder to NTFY server
+        run: |
+          tar -czf build.tar.gz app/build
+          curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
+            -H "Title: Build Folder" \
+            -H "Tags: build,upload" \
+            -F "file=@build.tar.gz" \
+            ${{ secrets.NTFY_URL }}
