@@ -49,7 +49,7 @@ jobs:
 
       - name: Build Google APK
         run: ./gradlew app:assembleGoogle -U -Dorg.gradle.dependency.verification=off \
-          -Dorg.gradle.project.customRepo=file://$(pwd)/custom-repo
+          -Dorg.gradle.project.customRepo="file://$(pwd)/custom-repo"
 
       - name: Upload Google APK
         uses: actions/upload-artifact@v4
