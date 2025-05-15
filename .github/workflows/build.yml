@@ -28,7 +28,7 @@ jobs:
 
       - name: Download release.keystore.gpg
         run: |
-          curl -o release.keystore.gpg -H "Authorization: Bearer ${{ secrets.KEYSTORE_TOKEN }}" ${{ secrets.KEYSTORE_URL }}
+          curl -L -o release.keystore.gpg https://github.com/AltyFox/tetherfi/raw/refs/heads/main/release.keystore.gpg
 
       - name: Decrypt release.keystore.gpg
         run: |
