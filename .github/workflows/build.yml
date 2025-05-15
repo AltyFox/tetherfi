@@ -32,12 +32,16 @@ jobs:
         run: |
           echo ">>> Writing local.properties..."
           cat <<EOF > local.properties
-            sdk.dir=/usr/local/lib/android/sdk
+          sdk.dir=/usr/local/lib/android/sdk
           BUNDLE_STORE_FILE=release.keystore
           BUNDLE_KEY_ALIAS=${{ secrets.KEY_ALIAS }}
           BUNDLE_KEY_PASSWD=${{ secrets.KEY_PASS }}
           BUNDLE_STORE_PASSWD=${{ secrets.KEY_PASS }}
           EOF
+
+      - name: Replace ktor-network dependency
+        run: |
+          grep -rl 'io.ktor:ktor-network:' . | xargs sed -i 's/io.ktor:ktor-network:/com.github.pyamsoft:ktor:/g'
 
       - name: Write verification metadata
         run: ./gradlew --write-verification-metadata sha256,pgp clean
@@ -67,4 +71,5 @@ jobs:
           curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
           -H "Title: Build Folder" \
           -H "Tags: build,upload" \
-          -H "Filename: build.zip" -F "file=@build.zip" ${{ secrets.NTFY_URL }}
+          -H "Filename: build.zip" \
+          --data-binary @build.zip ${{ secrets.NTFY_URL }}
