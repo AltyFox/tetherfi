@@ -45,8 +45,7 @@ jobs:
       - name: Add custom repository for ktor
         run: |
           mkdir -p custom-repo
-          curl -L https://github.com/pyamsoft/ktor/archive/refs/tags/3.1.3-pyamsoft.zip -o ktor-3.1.3-pyamsoft.zip
-          unzip ktor-3.1.3-pyamsoft.zip -d custom-repo
+          git clone --branch pyamsoft-3.1.3 https://github.com/pyamsoft/ktor.git custom-repo
 
       - name: Build Google APK
         run: ./gradlew app:assembleGoogle -U -Dorg.gradle.dependency.verification=off \
