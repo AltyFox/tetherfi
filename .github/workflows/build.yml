@@ -62,7 +62,7 @@ jobs:
             echo "KTOR packages successfully published to local Maven repository."
 
       - name: Build Google APK
-        run: ./gradlew app:assembleGoogle -U -Dorg.gradle.dependency.verification=off --stacktrace --info
+        run: ./gradlew app:assembleDebug -U -Dorg.gradle.dependency.verification=off
 
       - name: Upload Google APK
         uses: actions/upload-artifact@v4
