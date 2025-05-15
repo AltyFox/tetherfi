@@ -61,14 +61,14 @@ jobs:
             fi
             echo "KTOR packages successfully published to local Maven repository."
 
-      - name: Build Google APK
-        run: ./gradlew app:assembleDebug -U -Dorg.gradle.dependency.verification=off
+      - name: Build Fdroid APK
+        run: ./gradlew app:assembleFdroid -U -Dorg.gradle.dependency.verification=off
 
-      - name: Upload Google APK
+      - name: Upload Fdroid APK
         uses: actions/upload-artifact@v4
         with:
-          name: tetherfi-google-apk
-          path: app/build/outputs/apk/google/app-google.apk
+          name: build
+          path: app/build/
       
       - name: Save build cache
         if: always()
