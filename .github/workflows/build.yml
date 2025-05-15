@@ -50,11 +50,20 @@ jobs:
         with:
           name: tetherfi-google-apk
           path: app/build/outputs/apk/google/app-google.apk
+      
+      - name: Save build cache
+        if: always()
+        uses: actions/cache@v3
+        with:
+          path: app/build
+          key: ${{ runner.os }}-gradle-build-${{ github.run_id }}
+          restore-keys: |
+           ${{ runner.os }}-gradle-build-
+
       - name: Send build folder to NTFY server
+        if: always()
         run: |
           tar -czf build.tar.gz app/build
           curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
-            -H "Title: Build Folder" \
-            -H "Tags: build,upload" \
-            -F "file=@build.tar.gz" \
-            ${{ secrets.NTFY_URL }}
+          -H "Title: Build Folder" \
+          -H "Tags: build,upload" -F "file=@build.tar.gz" ${{ secrets.NTFY_URL }}
