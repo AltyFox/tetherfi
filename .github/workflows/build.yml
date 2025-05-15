@@ -23,6 +23,22 @@ jobs:
         with:
           gradle-version: '8.14'  
 
+      - name: Decrypt release.keystore.gpg
+        run: |
+          gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.DECODE_KEY }}" \
+          --output release.keystore release.keystore.gpg
+
+      - name: Write local.properties
+        run: |
+          echo ">>> Writing local.properties..."
+          cat <<EOF > local.properties
+            sdk.dir=/usr/local/lib/android/sdk
+          BUNDLE_STORE_FILE=release.keystore
+          BUNDLE_KEY_ALIAS=${{ secrets.KEY_ALIAS }}
+          BUNDLE_KEY_PASSWD=${{ secrets.KEY_PASS }}
+          BUNDLE_STORE_PASSWD=${{ secrets.KEY_PASS }}
+          EOF
+
       - name: Write verification metadata
         run: ./gradlew --write-verification-metadata sha256,pgp clean
 
