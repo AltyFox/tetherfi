@@ -50,6 +50,24 @@ jobs:
         run: ./gradlew --write-verification-metadata sha256,pgp clean
 
 
+      - name: Clone KTOR repository
+        run: |
+          git clone https://github.com/pyamsoft/ktor.git ktor-source
+
+      - name: Build and publish KTOR packages to local Maven repository
+        working-directory: ktor-source
+        run: |
+          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal
+          ./gradlew publishJvmPublicationToMavenLocal
+
+      - name: Verify KTOR packages in local Maven repository
+        run: |
+          if [ ! -d "$HOME/.m2/repository" ]; then
+           echo "Error: Maven repository not found!"
+           exit 1
+            fi
+            echo "KTOR packages successfully published to local Maven repository."
+
       - name: Build Google APK
         run: ./gradlew app:assembleGoogle -U -Dorg.gradle.dependency.verification=off
 
