@@ -44,7 +44,7 @@ jobs:
 
       - name: Clone KTOR repository
         run: |
-          git clone https://github.com/pyamsoft/ktor.git ktor-source
+          git clone --branch pyamsoft-3.1.3 https://github.com/pyamsoft/ktor.git ktor-source
 
       - name: Build and publish KTOR packages to local Maven repository
         working-directory: ktor-source
