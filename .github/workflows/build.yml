@@ -27,6 +27,7 @@ jobs:
         run: |
           gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.DECODE_KEY }}" \
           --output release.keystore release.keystore.gpg
+          cp release.keystore app/release.keystore
 
       - name: Write local.properties
         run: |
