@@ -42,8 +42,15 @@ jobs:
       - name: Write verification metadata
         run: ./gradlew --write-verification-metadata sha256,pgp clean
 
+      - name: Add custom repository for ktor
+        run: |
+          mkdir -p custom-repo
+          curl -L https://github.com/pyamsoft/ktor/archive/refs/tags/3.1.3-pyamsoft.zip -o ktor-3.1.3-pyamsoft.zip
+          unzip ktor-3.1.3-pyamsoft.zip -d custom-repo
+
       - name: Build Google APK
-        run: ./gradlew app:assembleGoogle -U -Dorg.gradle.dependency.verification=off
+        run: ./gradlew app:assembleGoogle -U -Dorg.gradle.dependency.verification=off \
+          -Dorg.gradle.project.customRepo=file://$(pwd)/custom-repo
 
       - name: Upload Google APK
         uses: actions/upload-artifact@v4
