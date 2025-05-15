@@ -21,7 +21,7 @@ jobs:
       - name: Setup Gradle 8.14
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.14'  
+          gradle-version: '8.14'
 
       - name: Decrypt release.keystore.gpg
         run: |
@@ -56,32 +56,27 @@ jobs:
       - name: Verify KTOR packages in local Maven repository
         run: |
           if [ ! -d "$HOME/.m2/repository" ]; then
-           echo "Error: Maven repository not found!"
-           exit 1
-            fi
-            echo "KTOR packages successfully published to local Maven repository."
+            echo "Error: Maven repository not found!"
+            exit 1
+          fi
+          echo "KTOR packages successfully published to local Maven repository."
 
-      - name: Build Fdroid APK
-        run: ./gradlew app:assembleFdroid -U -Dorg.gradle.dependency.verification=off
+      - name: Build Fdroid APK and save full log
+        run: |
+          ./gradlew app:assembleFdroid -U --info -Dorg.gradle.dependency.verification=off > full_build.log 2>&1
+          mkdir -p app/build/logs
+          mv full_build.log app/build/logs/
 
-      - name: Upload Fdroid APK
+      - name: Upload Fdroid APK and logs
         uses: actions/upload-artifact@v4
         with:
           name: build
           path: app/build/
-      
-      - name: Save build cache
-        if: always()
-        uses: actions/cache@v3
-        with:
-          path: app/build
-          key: ${{ runner.os }}-gradle-build-${{ github.run_id }}
-          restore-keys: |
-           ${{ runner.os }}-gradle-build-
 
       - name: Send build folder to NTFY server
         if: always()
         run: |
+          cd app
           zip -r build.zip build
           curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
           -H "Title: Build Folder" \
