@@ -74,8 +74,10 @@ jobs:
         if: steps.ktor_cache.outputs.cache-hit != 'true'
         working-directory: ktor-source
         run: |
-          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal | nc ${{ steps.parse_ssh.outputs.host }} 9000
-          ./gradlew publishJvmPublicationToMavenLocal | nc ${{ steps.parse_ssh.outputs.host }} 9000
+          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal  | ssh -t ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+          'export TERM=xterm; script -q -c "screen -S logsession bash" /dev/null'
+          ./gradlew publishJvmPublicationToMavenLocal  | ssh -t ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+          'export TERM=xterm; script -q -c "screen -S logsession bash" /dev/null'
 
       - name: Save KTOR Maven Cache
         if: steps.ktor_cache.outputs.cache-hit != 'true'
@@ -98,9 +100,12 @@ jobs:
 
       - name: Build Fdroid APK and save full log
         run: |
-          ./gradlew app:assembleFdroid -U --info -Dorg.gradle.dependency.verification=off | nc ${{ steps.parse_ssh.outputs.host }} 9000
-          mkdir -p app/build/logs | nc ${{ steps.parse_ssh.outputs.host }} 9000
-          mv full_build.log app/build/logs/ | nc ${{ steps.parse_ssh.outputs.host }} 9000
+          ./gradlew app:assembleFdroid -U --info -Dorg.gradle.dependency.verification=off  | ssh -t ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+          'export TERM=xterm; script -q -c "screen -S logsession bash" /dev/null'
+          mkdir -p app/build/logs  | ssh -t ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+          'export TERM=xterm; script -q -c "screen -S logsession bash" /dev/null'
+          mv full_build.log app/build/logs/ | ssh -t ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+          'export TERM=xterm; script -q -c "screen -S logsession bash" /dev/null'
 
       - name: Upload Fdroid APK and logs
         uses: actions/upload-artifact@v4
