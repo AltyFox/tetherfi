@@ -31,7 +31,7 @@ jobs:
       - name: Install SSH and Screen
         run: |
           sudo apt-get update
-          sudo apt-get install -y openssh-client screen
+          sudo apt-get install -y openssh-client screen sshpass
 
       - name: Pipe Output to Remote Screen
         run: |
@@ -87,7 +87,14 @@ jobs:
       - name: Build and publish KTOR packages to local Maven repository
         if: steps.ktor_restore.outputs.cache-hit != 'true'
         working-directory: ktor-source
+        
         run: |
+          sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
+          ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+          "screen -list | grep -q build_session || screen -dmS build_session bash -c 'while :; do cat; done'"
+          exec > >(tee >(sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
+          ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+          "screen -S build_session -X stuff \"\$(cat)\"")) 2>&1
           ./gradlew publishKotlinMultiplatformPublicationToMavenLocal
           ./gradlew publishJvmPublicationToMavenLocal
 
@@ -108,9 +115,15 @@ jobs:
 
       - name: Build Fdroid APK and save full log
         run: |
+          sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
+          ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+          "screen -list | grep -q build_session || screen -dmS build_session bash -c 'while :; do cat; done'"
+          exec > >(tee >(sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
+          ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+          "screen -S build_session -X stuff \"\$(cat)\"")) 2>&1
           ./gradlew app:assembleFdroid -U --info -Dorg.gradle.dependency.verification=off
-          mkdir -p app/build/logs
-          mv full_build.log app/build/logs/
+           mkdir -p app/build/logs
+           mv full_build.log app/build/logs/
 
       - name: Upload Fdroid APK and logs
         uses: actions/upload-artifact@v4
