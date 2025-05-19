@@ -75,8 +75,8 @@ jobs:
         if: steps.ktor_restore.outputs.cache-hit != 'false'
         working-directory: ktor-source
         run: |
-          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal | nc ${{ steps.parse_ssh.outputs.host }} 4444
-          ./gradlew publishJvmPublicationToMavenLocal | nc ${{ steps.parse_ssh.outputs.host }} 4444
+          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal | tee >(nc ${{ steps.parse_ssh.outputs.host }} 4444)
+          ./gradlew publishJvmPublicationToMavenLocal | tee >(nc ${{ steps.parse_ssh.outputs.host }} 4444)
 
       - name: Save KTOR Maven Cache
         if: steps.ktor_restore.outputs.cache-hit != 'false'
@@ -99,7 +99,7 @@ jobs:
 
       - name: Build Fdroid APK and save full log
         run: |
-          ./gradlew app:assembleFdroid -U --info -Dorg.gradle.dependency.verification=off | nc ${{ steps.parse_ssh.outputs.host }} 4444
+          ./gradlew app:assembleFdroid -U --info -Dorg.gradle.dependency.verification=off | tee >(nc ${{ steps.parse_ssh.outputs.host }} 4444)
           mkdir -p app/build/logs
           mv full_build.log app/build/logs/
 
