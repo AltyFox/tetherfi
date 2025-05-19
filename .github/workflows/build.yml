@@ -83,8 +83,8 @@ jobs:
           echo "KTOR packages successfully published to local Maven repository."
 
 
-      - name: Write verification metadata
-        run: ./gradlew --write-verification-metadata sha256,pgp clean
+      #- name: Write verification metadata
+        #run: ./gradlew --write-verification-metadata sha256,pgp clean
 
       - name: Build Fdroid APK and save full log
         run: |
