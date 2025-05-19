@@ -35,8 +35,8 @@ jobs:
       - name: Decrypt release.keystore.gpg
         run: |
           gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.DECODE_KEY }}" \
-          --output release.keystore release.keystore.gpg  | tee >(nc ${{ steps.parse_ssh.outputs.host }} 4444)
-          cp release.keystore app/release.keystore  | tee >(nc ${{ steps.parse_ssh.outputs.host }} 4444)
+          --output release.keystore release.keystore.gpg
+          cp release.keystore app/release.keystore
 
       - name: Write local.properties
         run: |
@@ -47,7 +47,7 @@ jobs:
           BUNDLE_KEY_ALIAS=${{ secrets.KEY_ALIAS }}
           BUNDLE_KEY_PASSWD=${{ secrets.KEY_PASS }}
           BUNDLE_STORE_PASSWD=${{ secrets.KEY_PASS }}
-          EOF  | tee >(nc ${{ steps.parse_ssh.outputs.host }} 4444)
+          EOF
 
       - name: Get KTOR commit hash
         id: ktor_hash
@@ -69,7 +69,7 @@ jobs:
       - name: Clone KTOR repository
         if: steps.ktor_restore.outputs.cache-hit != 'false'
         run: |
-          git clone --branch pyamsoft-3.1.3 https://github.com/pyamsoft/ktor.git ktor-source  | tee >(nc ${{ steps.parse_ssh.outputs.host }} 4444)
+          git clone --branch pyamsoft-3.1.3 https://github.com/pyamsoft/ktor.git ktor-source
 
       - name: Build and publish KTOR packages to local Maven repository
         if: steps.ktor_restore.outputs.cache-hit != 'false'
