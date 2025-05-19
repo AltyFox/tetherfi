@@ -47,13 +47,6 @@ jobs:
           git ls-remote https://github.com/pyamsoft/ktor.git refs/heads/pyamsoft-3.1.3 | cut -f1 > ktor_commit.txt
           echo "ktor-commit=$(cat ktor_commit.txt)" >> $GITHUB_OUTPUT
 
-      - name: Cache local Maven repository for KTOR
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ktor-maven-${{ steps.ktor_hash.outputs.ktor-commit }}
-          restore-keys: |
-            ktor-maven-
 
       - name: Clone KTOR repository
         run: |
@@ -72,6 +65,15 @@ jobs:
             exit 1
           fi
           echo "KTOR packages successfully published to local Maven repository."
+
+          
+      - name: Cache local Maven repository for KTOR
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ktor-maven-${{ steps.ktor_hash.outputs.ktor-commit }}
+          restore-keys: |
+            ktor-maven-
 
       - name: Write verification metadata
         run: ./gradlew --write-verification-metadata sha256,pgp clean
