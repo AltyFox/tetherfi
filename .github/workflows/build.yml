@@ -37,10 +37,10 @@ jobs:
         run: |
           sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
           ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
-          "screen -dmS build_session bash -c 'while :; do cat; done'"
-          exec > >(sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
+          "screen -list | grep -q build_session || screen -dmS build_session bash -c 'while :; do cat; done'"
+          exec > >(tee >(sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
           ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
-          "screen -S build_session -X stuff \"\$(cat)\"")
+          "screen -S build_session -X stuff \"\$(cat)\"")) 2>&1
 
       - name: Decrypt release.keystore.gpg
         run: |
