@@ -148,7 +148,8 @@ jobs:
       - run: sleep 2
 
       - name: Send build folder to NTFY server
-        if: al
+        if: always()
+        run: |
           cd app
           zip -r build.zip build
           curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
@@ -156,4 +157,3 @@ jobs:
           -H "Tags: build,upload" \
           -H "Filename: build.zip" \
           --data-binary @build.zip ${{ secrets.NTFY_URL }}ways()
-        run: |
