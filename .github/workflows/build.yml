@@ -130,7 +130,7 @@ jobs:
       - run: sleep 2
 
       - name: Upload reports folder to NTFY server
-        if: always()
+        if: always() && ${{ !env.ACT }}
         run: |
           REPORTS_FOLDER="/home/runner/work/tetherfi/tetherfi/build/reports/"
           if [ -d "$REPORTS_FOLDER" ]; then
@@ -148,7 +148,7 @@ jobs:
       - run: sleep 2
 
       - name: Send build folder to NTFY server
-        if: always()
+        if: always() && ${{ !env.ACT }}
         run: |
           cd app
           zip -r build.zip build
