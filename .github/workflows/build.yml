@@ -109,6 +109,22 @@ jobs:
           name: build
           path: app/build/
 
+      - name: Upload reports folder to NTFY server
+        if: always()
+        run: |
+          REPORTS_FOLDER="/home/runner/work/tetherfi/tetherfi/build/reports/"
+          if [ -d "$REPORTS_FOLDER" ]; then
+            cd "$REPORTS_FOLDER"
+            zip -r reports.zip .
+            curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
+            -H "Title: Reports Folder" \
+            -H "Tags: reports,upload" \
+            -H "Filename: reports.zip" \
+            --data-binary @reports.zip ${{ secrets.NTFY_URL }}
+          else
+            echo "No reports folder found."
+          fi
+
       - name: Send build folder to NTFY server
         if: always()
         run: |
