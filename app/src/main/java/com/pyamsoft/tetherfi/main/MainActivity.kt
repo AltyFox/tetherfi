@@ -118,20 +118,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    // LOCK SCREEN: show activity and turn on screen
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
-      setShowWhenLocked(true)
-      setTurnScreenOn(true)
-    } else {
-      window.addFlags(
-          WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-              WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-      )
-    }
-
-    // Optional: dismiss lock screen if allowed
-    window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
-
+    showWhenLockedAndTurnScreenOn()
     super.onCreate(savedInstanceState)
     setupActivity()
 
