@@ -8,6 +8,8 @@
 .cxx
 local.properties
 .idea
+.secrets
+.vscode
 
 # Prettier
 node_modules
