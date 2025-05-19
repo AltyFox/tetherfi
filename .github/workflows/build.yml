@@ -30,11 +30,21 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y sshpass
 
-      - name: Set SSH stream command
+      - name: Start virtual TTY screen session
+        id: screen_name
+        run: |
+          SCREEN_ID="ci-stream-$$"
+          echo "screen_id=$SCREEN_ID" >> $GITHUB_OUTPUT
+          sshpass -p '${{ steps.parse_ssh.outputs.pass }}' \
+            ssh -o StrictHostKeyChecking=no ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+            "screen -dmS $SCREEN_ID bash -c 'echo SCREEN SESSION READY; exec bash'"
+
+
+      - name: Set streaming command
         id: set_stream_cmd
         run: |
-          echo "sshpass -p '${{ steps.parse_ssh.outputs.pass }}' ssh -o StrictHostKeyChecking=no ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} 'cat > /dev/pts/1'" >> $GITHUB_OUTPUT
-
+          echo "stream_cmd=your-command | sshpass -p '${{ steps.parse_ssh.outputs.pass }}' ssh -o StrictHostKeyChecking=no ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} 'screen -S ${{ steps.screen_name.outputs.screen_id }} -X stuff \"\$(cat)\\n\"'" >> $GITHUB_OUTPUT
+          
 
       - name: Decrypt release.keystore.gpg
         run: |
