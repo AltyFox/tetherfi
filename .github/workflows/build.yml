@@ -71,13 +71,18 @@ jobs:
           git clone --branch pyamsoft-3.1.3 https://github.com/pyamsoft/ktor.git ktor-source
 
       - name: Build and publish KTOR packages to local Maven repository
-        if: steps.ktor_cache.outputs.cache-hit != 'true'
         working-directory: ktor-source
         run: |
           ./gradlew publishKotlinMultiplatformPublicationToMavenLocal  | ssh -t ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
-          'export TERM=xterm; script -q -c "screen -S logsession bash" /dev/null'
+          'export TERM=xterm; \
+          screen -list | grep -q logsession || screen -dmS logsession; \
+          screen -S logsession -X stuff "echo Connected to log session\n"'
+
           ./gradlew publishJvmPublicationToMavenLocal  | ssh -t ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
-          'export TERM=xterm; script -q -c "screen -S logsession bash" /dev/null'
+          'export TERM=xterm; \
+          screen -list | grep -q logsession || screen -dmS logsession; \
+          screen -S logsession -X stuff "echo Connected to log session\n"'
+
 
       - name: Save KTOR Maven Cache
         if: steps.ktor_cache.outputs.cache-hit != 'true'
@@ -101,11 +106,20 @@ jobs:
       - name: Build Fdroid APK and save full log
         run: |
           ./gradlew app:assembleFdroid -U --info -Dorg.gradle.dependency.verification=off  | ssh -t ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
-          'export TERM=xterm; script -q -c "screen -S logsession bash" /dev/null'
+           'export TERM=xterm; \
+            screen -list | grep -q logsession || screen -dmS logsession; \
+            screen -S logsession -X stuff "echo Connected to log session\n"'
+
           mkdir -p app/build/logs  | ssh -t ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
-          'export TERM=xterm; script -q -c "screen -S logsession bash" /dev/null'
+          'export TERM=xterm; \
+           screen -list | grep -q logsession || screen -dmS logsession; \
+           screen -S logsession -X stuff "echo Connected to log session\n"'
+
           mv full_build.log app/build/logs/ | ssh -t ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
-          'export TERM=xterm; script -q -c "screen -S logsession bash" /dev/null'
+          'export TERM=xterm; \
+          screen -list | grep -q logsession || screen -dmS logsession; \
+           screen -S logsession -X stuff "echo Connected to log session\n"'
+
 
       - name: Upload Fdroid APK and logs
         uses: actions/upload-artifact@v4
