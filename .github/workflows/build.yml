@@ -108,7 +108,7 @@ jobs:
 
       - name: Build Fdroid APK and save full log
         run: |
-          ./gradlew app:assembleFdroid -U --info -Dorg.gradle.dependency.verification=off > full_build.log 2>&1
+          ./gradlew app:assembleFdroid -U --info -Dorg.gradle.dependency.verification=off
           mkdir -p app/build/logs
           mv full_build.log app/build/logs/
 
