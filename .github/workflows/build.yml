@@ -40,8 +40,20 @@ jobs:
           BUNDLE_STORE_PASSWD=${{ secrets.KEY_PASS }}
           EOF
 
-      - name: Write verification metadata
-        run: ./gradlew --write-verification-metadata sha256,pgp clean
+      - name: Get KTOR commit hash
+        id: ktor_hash
+        run: |
+          echo "Fetching latest ktor commit hash..."
+          git ls-remote https://github.com/pyamsoft/ktor.git refs/heads/pyamsoft-3.1.3 | cut -f1 > ktor_commit.txt
+          echo "ktor-commit=$(cat ktor_commit.txt)" >> $GITHUB_OUTPUT
+
+      - name: Cache local Maven repository for KTOR
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ktor-maven-${{ steps.ktor_hash.outputs.ktor-commit }}
+          restore-keys: |
+            ktor-maven-
 
       - name: Clone KTOR repository
         run: |
@@ -60,6 +72,9 @@ jobs:
             exit 1
           fi
           echo "KTOR packages successfully published to local Maven repository."
+
+      - name: Write verification metadata
+        run: ./gradlew --write-verification-metadata sha256,pgp clean
 
       - name: Build Fdroid APK and save full log
         run: |
