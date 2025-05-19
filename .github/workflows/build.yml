@@ -54,7 +54,7 @@ jobs:
 
       - name: Echo KTOR commit information
         run: |
-          echo "KTOR commit hash: ${{ steps.ktor_hash.outputs.ktor-commit }}
+          echo "KTOR commit hash: ${{ steps.ktor_hash.outputs.ktor-commit }}""
 
       - name: Restore KTOR Maven Cache
         id: ktor_restore
