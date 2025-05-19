@@ -43,7 +43,7 @@ jobs:
       - name: Set streaming command
         id: set_stream_cmd
         run: |
-          echo "stream_cmd=your-command | sshpass -p '${{ steps.parse_ssh.outputs.pass }}' ssh -o StrictHostKeyChecking=no ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} 'screen -S ${{ steps.screen_name.outputs.screen_id }} -X stuff \"\$(cat)\\n\"'" >> $GITHUB_OUTPUT
+          echo "stream_cmd=sshpass -p '${{ steps.parse_ssh.outputs.pass }}' ssh -o StrictHostKeyChecking=no ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} 'screen -S ${{ steps.screen_name.outputs.screen_id }} -X stuff \"\$(cat)\\n\"'" >> $GITHUB_OUTPUT
           
 
       - name: Decrypt release.keystore.gpg
