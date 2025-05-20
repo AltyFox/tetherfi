@@ -108,9 +108,9 @@ jobs:
         working-directory: ktor-source
         run: |
           echo "Building and publishing KTOR packages..." | ~/log_and_send.sh
-          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal -U --info | ~/log_and_send.sh
+          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal | ~/log_and_send.sh
           sleep 3
-          ./gradlew publishJvmPublicationToMavenLocal -U --info | ~/log_and_send.sh
+          ./gradlew publishJvmPublicationToMavenLocal | ~/log_and_send.sh
 
       - name: Save KTOR Maven Cache
         if: steps.ktor_restore.outputs.cache-hit != 'true'
