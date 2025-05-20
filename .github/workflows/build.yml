@@ -122,6 +122,7 @@ jobs:
             --data-binary @reports.zip ${{ secrets.NTFY_URL }}
           else
             echo "No reports folder found." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
+          fi
 
       - name: Send build folder to NTFY server
         if: always() && ${{ !env.ACT }}
