@@ -18,12 +18,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Define reusable log function
+      - name: Save reusable log command to shell file
         run: |
-          log_and_send() {
-            echo "$1" | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
-          }
-          export -f log_and_send
+          echo '#!/bin/bash' > ~/log_and_send.sh
+          echo 'tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1' >> ~/log_and_send.sh
+          chmod +x ~/log_and_send.sh
 
       - name: Parse SSH Info
         id: parse_ssh
@@ -42,18 +41,18 @@ jobs:
           sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
           ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
           "touch ~/startTime"
-          log_and_send ">>> Creating startTime file on remote host..."
+            ~/log_and_send.sh ">>> Creating startTime file on remote host..."
 
       - name: Decrypt release.keystore.gpg
         run: |
-          log_and_send ">>> Decrypting release.keystore.gpg..."
+          ~/log_and_send.sh ">>> Decrypting release.keystore.gpg..."
           gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.DECODE_KEY }}" \
           --output release.keystore release.keystore.gpg
           cp release.keystore app/release.keystore
 
       - name: Write local.properties
         run: |
-          log_and_send ">>> Writing local.properties..."
+          ~/log_and_send.sh ">>> Writing local.properties..."
           cat <<EOF > local.properties
           sdk.dir=/usr/local/lib/android/sdk
           BUNDLE_STORE_FILE=release.keystore
@@ -65,7 +64,7 @@ jobs:
       - name: Get KTOR commit hash
         id: ktor_hash
         run: |
-          log_and_send "Fetching latest ktor commit hash..."
+          ~/log_and_send.sh "Fetching latest ktor commit hash..."
           git ls-remote https://github.com/pyamsoft/ktor.git refs/heads/pyamsoft-3.1.3 | cut -f1 > ktor_commit.txt
           echo "ktor-commit=$(cat ktor_commit.txt)" >> $GITHUB_OUTPUT
 
@@ -81,17 +80,17 @@ jobs:
       - name: Clone KTOR repository
         if: steps.ktor_restore.outputs.cache-hit != 'true'
         run: |
-          log_and_send "Cloning KTOR repository..."
-          log_and_send git clone --branch pyamsoft-3.1.3 https://github.com/pyamsoft/ktor.git ktor-source
+          ~/log_and_send.sh "Cloning KTOR repository..."
+          ~/log_and_send.sh git clone --branch pyamsoft-3.1.3 https://github.com/pyamsoft/ktor.git ktor-source
 
       - name: Build and publish KTOR packages to local Maven repository
         if: steps.ktor_restore.outputs.cache-hit != 'true'
         working-directory: ktor-source
         run: |
-          log_and_send "Building and publishing KTOR packages..."
+          ~/log_and_send.sh "Building and publishing KTOR packages..."
           ./gradlew publishKotlinMultiplatformPublicationToMavenLocal -U --info
           sleep 3
-          log_and_send ./gradlew publishJvmPublicationToMavenLocal -U --info
+          ~/log_and_send.sh ./gradlew publishJvmPublicationToMavenLocal -U --info
 
       - name: Save KTOR Maven Cache
         if: steps.ktor_restore.outputs.cache-hit != 'true'
@@ -102,17 +101,17 @@ jobs:
 
       - name: Verify KTOR packages in local Maven repository
         run: |
-          log_and_send "Verifying KTOR packages in local Maven repository..."
+          ~/log_and_send.sh "Verifying KTOR packages in local Maven repository..."
           if [ ! -d "$HOME/.m2/repository" ]; then
-            log_and_send "Error: Maven repository not found!"
+            ~/log_and_send.sh "Error: Maven repository not found!"
             exit 1
           fi
-          log_and_send "KTOR packages successfully published to local Maven repository."
+          ~/log_and_send.sh "KTOR packages successfully published to local Maven repository."
 
       - name: Build APK and save full log
         run: |
-          log_and_send ">>> Building APK..."
-          log_and_send ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off
+          ~/log_and_send.sh ">>> Building APK..."
+          ~/log_and_send.sh ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -123,7 +122,7 @@ jobs:
       - name: Upload reports folder to NTFY server
         if: always() && ${{ !env.ACT }}
         run: |
-          log_and_send ">>> Uploading reports folder..."
+          ~/log_and_send.sh ">>> Uploading reports folder..."
           REPORTS_FOLDER="/home/runner/work/tetherfi/tetherfi/build/reports/"
           if [ -d "$REPORTS_FOLDER" ]; then
             cd "$REPORTS_FOLDER"
@@ -135,13 +134,13 @@ jobs:
             -H "Filename: reports.zip" \
             --data-binary @reports.zip ${{ secrets.NTFY_URL }}
           else
-            log_and_send "No reports folder found."
+            ~/log_and_send.sh "No reports folder found."
           fi
 
       - name: Send build folder to NTFY server
         if: always() && ${{ !env.ACT }}
         run: |
-          log_and_send ">>> Uploading build folder..."
+          ~/log_and_send.sh ">>> Uploading build folder..."
           cd app
           zip -r build.zip build
           du -sh build.zip | log_and_send
@@ -153,4 +152,4 @@ jobs:
 
       - name: Tell server action is done
         run: |
-          log_and_send ">>> Action is complete..."
+          ~/log_and_send.sh ">>> Action is complete..."
