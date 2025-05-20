@@ -24,7 +24,6 @@ jobs:
           java-version: "17"
 
       - name: Set up Android SDK
-        if: steps.restore-cache.outputs.cache-hit != 'true'
         uses: android-actions/setup-android@v3
 
       - name: Parse SSH Info
@@ -138,10 +137,12 @@ jobs:
           echo ">>> APK build completed." | ~/log_and_send.sh
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: apk
           path: app/build/outputs/apk/**/*.apk
+          retention-days: 7
+
 
       - name: Upload reports folder to NTFY server
         if: always() && ${{ !env.ACT }}
