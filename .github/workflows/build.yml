@@ -25,11 +25,11 @@ jobs:
 
       - name: Restore Android SDK cache
         id: restore-cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache@v3
         with:
           path: |
             ~/.android
-          key: ${{ runner.os }}-android-sdk-${{ hashFiles('**/*.gradle*', '**/build.gradle*') }}
+          key: ${{ runner.os }}-android-sdk-api-level-36-build-tools-36.0.0-ndk-latest
           restore-keys: |
             ${{ runner.os }}-android-sdk-
 
@@ -50,7 +50,7 @@ jobs:
         with:
           path: |
             ~/.android
-          key: ${{ runner.os }}-android-sdk-${{ hashFiles('**/*.gradle*', '**/build.gradle*') }}
+          key: ${{ runner.os }}-android-sdk-api-level-36-build-tools-36.0.0-ndk-latest
           restore-keys: |
             ${{ runner.os }}-android-sdk-
 
@@ -75,8 +75,7 @@ jobs:
           echo 'fi' >> ~/start_ssh_tunnel.sh
           
           chmod +x ~/start_ssh_tunnel.sh
-          # Start the SSH tunnel inside a screen session and capture the session name
-          screen -dmS ssh_tunnel bash ~/start_ssh_tunnel.sh
+          ~/start_ssh_tunnel.sh
 
                 
       - name: Forward data using file to the SSH tunnel
