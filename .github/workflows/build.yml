@@ -215,3 +215,4 @@ jobs:
         if: always()
         run: |
             echo -e ">>> Action is complete...\n\n\n\n\n\n\n\n\n\n\n" | ~/log_and_send.sh
+            sleep 10
