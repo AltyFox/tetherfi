@@ -48,18 +48,18 @@ jobs:
           echo '  sleep 1' >> ~/start_ssh_tunnel.sh
           echo 'fi' >> ~/start_ssh_tunnel.sh
 
-          echo 'START_TIME=$(date +%s)' >> ~/start_ssh_tunnel.sh
-          echo 'while true; do' >> ~/start_ssh_tunnel.sh
-          echo '  if [ -s "$BUFFER_FILE" ]; then' >> ~/start_ssh_tunnel.sh
-          echo '    while IFS= read -r line; do' >> ~/start_ssh_tunnel.sh
-          echo '      NOW=$(date +%s)' >> ~/start_ssh_tunnel.sh
-          echo '      ELAPSED=$((NOW - START_TIME))' >> ~/start_ssh_tunnel.sh
-          echo '      printf "%s [elapsed: %02d:%02d:%02d]\n" "$line" "$((ELAPSED/3600))" "$(( (ELAPSED%3600)/60 ))" "$((ELAPSED%60))"' >> ~/start_ssh_tunnel.sh
-          echo '    done < "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/start_ssh_tunnel.sh
-          echo '    > "$BUFFER_FILE"' >> ~/start_ssh_tunnel.sh
-          echo '  fi' >> ~/start_ssh_tunnel.sh
-          echo '  sleep 0.5' >> ~/start_ssh_tunnel.sh
-          echo 'done &' >> ~/start_ssh_tunnel.sh
+            echo 'START_TIME=$(date +%s)' >> ~/start_ssh_tunnel.sh
+            echo 'while true; do' >> ~/start_ssh_tunnel.sh
+            echo '  if [ -s "$BUFFER_FILE" ]; then' >> ~/start_ssh_tunnel.sh
+            echo '    while IFS= read -r line; do' >> ~/start_ssh_tunnel.sh
+            echo '      NOW=$(date +%s)' >> ~/start_ssh_tunnel.sh
+            echo '      ELAPSED=$((NOW - START_TIME))' >> ~/start_ssh_tunnel.sh
+            echo '      printf "[%02d:%02d:%02d] %s\n" "$((ELAPSED/3600))" "$(( (ELAPSED%3600)/60 ))" "$((ELAPSED%60))" "$line"' >> ~/start_ssh_tunnel.sh
+            echo '    done < "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/start_ssh_tunnel.sh
+            echo '    > "$BUFFER_FILE"' >> ~/start_ssh_tunnel.sh
+            echo '  fi' >> ~/start_ssh_tunnel.sh
+            echo '  sleep 0.5' >> ~/start_ssh_tunnel.sh
+            echo 'done &' >> ~/start_ssh_tunnel.sh
 
           chmod +x ~/start_ssh_tunnel.sh
           ~/start_ssh_tunnel.sh &
