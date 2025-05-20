@@ -25,7 +25,7 @@ jobs:
 
       - name: Restore Android SDK cache
         id: restore-cache
-        uses: actions/cache@v2
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.android
@@ -39,7 +39,7 @@ jobs:
       # Step 2: Set up Android SDK only if the cache is missing
       - name: Set up Android SDK
         if: steps.restore-cache.outputs.cache-hit != 'true'
-        uses: android-actions/setup-android@v2
+        uses: android-actions/setup-android@v4
         with:
           api-level: 36
           target-sdk: 36
@@ -49,7 +49,7 @@ jobs:
       # Step 3: Cache Android SDK after setup (only if setup was performed)
       - name: Cache Android SDK
         if: steps.restore-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: |
             ~/.android
