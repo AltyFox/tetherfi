@@ -53,7 +53,7 @@ jobs:
           
           chmod +x ~/start_ssh_tunnel.sh
           # Start the SSH tunnel inside a screen session and capture the session name
-          screen -dmS ssh_tunnel bash ~/start_ssh_tunnel.sh'
+          screen -dmS ssh_tunnel bash ~/start_ssh_tunnel.sh
 
                 
       - name: Forward data using file to the SSH tunnel
