@@ -191,7 +191,7 @@ jobs:
           APK_PATH=$(find app/build/outputs/apk/ -name "*.apk" | head -n 1)
           echo ">>> APK path: $APK_PATH" | ~/log_and_send.sh
             if [ -f "$APK_PATH" ]; then
-            cd "$(dirname "$APK_PATH")"
+            cd $APK_PATH
             sleep 1
             ls -lh ./ | ~/log_and_send.sh
             sleep 1
