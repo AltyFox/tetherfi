@@ -48,9 +48,14 @@ jobs:
           echo '  sleep 1' >> ~/start_ssh_tunnel.sh
           echo 'fi' >> ~/start_ssh_tunnel.sh
 
+          echo 'START_TIME=$(date +%s)' >> ~/start_ssh_tunnel.sh
           echo 'while true; do' >> ~/start_ssh_tunnel.sh
           echo '  if [ -s "$BUFFER_FILE" ]; then' >> ~/start_ssh_tunnel.sh
-          echo '    cat "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/start_ssh_tunnel.sh
+          echo '    while IFS= read -r line; do' >> ~/start_ssh_tunnel.sh
+          echo '      NOW=$(date +%s)' >> ~/start_ssh_tunnel.sh
+          echo '      ELAPSED=$((NOW - START_TIME))' >> ~/start_ssh_tunnel.sh
+          echo '      printf "%s [elapsed: %02d:%02d:%02d]\n" "$line" "$((ELAPSED/3600))" "$(( (ELAPSED%3600)/60 ))" "$((ELAPSED%60))"' >> ~/start_ssh_tunnel.sh
+          echo '    done < "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/start_ssh_tunnel.sh
           echo '    > "$BUFFER_FILE"' >> ~/start_ssh_tunnel.sh
           echo '  fi' >> ~/start_ssh_tunnel.sh
           echo '  sleep 0.5' >> ~/start_ssh_tunnel.sh
@@ -187,15 +192,21 @@ jobs:
           echo ">>> APK path: $APK_PATH" | ~/log_and_send.sh
             if [ -f "$APK_PATH" ]; then
             cd "$(dirname "$APK_PATH")"
+            sleep 1
+            ls -lh ./ | ~/log_and_send.sh
+            sleep 1
             $APK_NAME=$(basename "$APK_PATH")
+            sleep 1
             echo ">>> APK name: $APK_NAME" | ~/log_and_send.sh
             du -sh "$APK_NAME" | ~/log_and_send.sh
+            sleep 1
             curl -X POST \
               -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
               -H "Title: APK File" \
               -H "Tags: apk,upload" \
               -H "Filename: $APK_NAME" \
               --data-binary @"$APK_NAME" ${{ secrets.NTFY_URL }} | ~/log_and_send.sh
+              sleep 1
           else
             echo "No APK file found." | ~/log_and_send.sh
           fi
