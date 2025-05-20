@@ -118,7 +118,6 @@ class MainActivity : AppCompatActivity() {
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    showWhenLockedAndTurnScreenOn()
     super.onCreate(savedInstanceState)
     setupActivity()
 
