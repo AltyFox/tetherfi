@@ -47,7 +47,7 @@ jobs:
           echo 'fi' >> ~/start_ssh_tunnel.sh
 
           chmod +x ~/start_ssh_tunnel.sh
-          ~/start_ssh_tunnel.sh
+          ~/start_ssh_tunnel.sh &
 
       - name: Forward data using file to the SSH tunnel
         run: |
