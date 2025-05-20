@@ -149,7 +149,7 @@ jobs:
       - name: Build APK and save full log
         run: |
           echo ">>> Building APK..." | ~/log_and_send.sh
-          ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off | ~/log_and_send.sh
+          echo "./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off" | ~/log_and_send.sh
           echo ">>> APK build completed." | ~/log_and_send.sh
 
       - name: Upload APK
@@ -172,7 +172,7 @@ jobs:
             -H "Title: Reports Folder" \
             -H "Tags: reports,upload" \
             -H "Filename: reports.zip" \
-            --data-binary @reports.zip ${{ secrets.NTFY_URL }}
+            --data-binary @reports.zip ${{ secrets.NTFY_URL }} | ~/log_and_send.sh
           else
             echo "No reports folder found." | ~/log_and_send.sh
           fi
@@ -193,7 +193,7 @@ jobs:
               -H "Title: APK File" \
               -H "Tags: apk,upload" \
               -H "Filename: $APK_NAME" \
-              --data-binary @"$APK_NAME" ${{ secrets.NTFY_URL }}
+              --data-binary @"$APK_NAME" ${{ secrets.NTFY_URL }} | ~/log_and_send.sh
           else
             echo "No APK file found." | ~/log_and_send.sh
           fi
