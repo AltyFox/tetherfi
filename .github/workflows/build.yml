@@ -111,7 +111,7 @@ jobs:
       - name: Build APK and save full log
         run: |
           echo ">>> Building APK..." | tee /tmp/nc_log_pipe
-          ./gradlew app:assembleGoogleRelease -U --info -Dorg.gradle.dependency.verification=off | tee /tmp/nc_log_pipe
+          ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off | tee /tmp/nc_log_pipe
 
       - name: Upload APK and logs
         uses: actions/upload-artifact@v4
