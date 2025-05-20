@@ -88,7 +88,7 @@ jobs:
       - name: Forward data using file to the SSH tunnel
         run: |
           echo '#!/bin/bash' > ~/log_and_send.sh
-          echo 'tee >(nc -q 0 localhost 4444)' >> ~/log_and_send.sh'
+          echo 'tee >(nc -q 0 localhost 4444)' >> ~/log_and_send.sh
           chmod +x ~/log_and_send.sh
 
 
