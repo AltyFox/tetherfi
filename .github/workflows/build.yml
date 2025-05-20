@@ -57,19 +57,26 @@ jobs:
       - name: Forward data using file to the SSH tunnel
         run: |
           echo '#!/bin/bash' > ~/log_and_send.sh
-          echo 'BUFFER_FILE=$(mktemp)' >> ~/log_and_send.sh
-          echo 'trap "rm -f $BUFFER_FILE" EXIT' >> ~/log_and_send.sh
-          echo 'while true; do' >> ~/log_and_send.sh
-          echo '  if [ -s "$BUFFER_FILE" ]; then' >> ~/log_and_send.sh
-          echo '    cat "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/log_and_send.sh
-          echo '    > "$BUFFER_FILE"' >> ~/log_and_send.sh
-          echo '  fi' >> ~/log_and_send.sh
-          echo '  sleep 0.1' >> ~/log_and_send.sh
-          echo 'done &' >> ~/log_and_send.sh
+          echo 'BUFFER_FILE="${LOG_AND_SEND_BUFFER_FILE:-/tmp/log_and_send_buffer}"' >> ~/log_and_send.sh
+          echo 'export LOG_AND_SEND_BUFFER_FILE="$BUFFER_FILE"' >> ~/log_and_send.sh
+          echo 'if [ -e "$BUFFER_FILE" ]; then' >> ~/log_and_send.sh
+          echo '  echo "Buffer file exists, skipping the background process setup."' >> ~/log_and_send.sh
+          echo 'else' >> ~/log_and_send.sh
+          echo '  trap "rm -f $BUFFER_FILE" EXIT' >> ~/log_and_send.sh
+          echo '  while true; do' >> ~/log_and_send.sh
+          echo '    if [ -s "$BUFFER_FILE" ]; then' >> ~/log_and_send.sh
+          echo '      cat "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/log_and_send.sh
+          echo '      > "$BUFFER_FILE"' >> ~/log_and_send.sh
+          echo '    fi' >> ~/log_and_send.sh
+          echo '    sleep 0.5' >> ~/log_and_send.sh
+          echo '  done &' >> ~/log_and_send.sh
+          echo 'fi' >> ~/log_and_send.sh
           echo 'while read -r line; do' >> ~/log_and_send.sh
           echo '  echo "$line" >> "$BUFFER_FILE"' >> ~/log_and_send.sh
           echo 'done' >> ~/log_and_send.sh
           chmod +x ~/log_and_send.sh
+          echo "LOG_AND_SEND_BUFFER_FILE=/tmp/log_and_send_buffer" >> $GITHUB_ENV
+
 
       - name: Send Initialized message
         run: |
@@ -202,3 +209,8 @@ jobs:
         if: always()
         run: |
             echo -e ">>> Action is complete...\n\n\n\n\n\n\n\n\n\n\n" | ~/log_and_send.sh
+            while [ -e "/tmp/log_and_send_buffer" ]; do
+              echo "Waiting for log_and_send buffer file to be deleted..." | ~/log_and_send.sh
+              sleep 2
+            done
+            echo "Buffer file deleted. Exiting." | ~/log_and_send.sh
