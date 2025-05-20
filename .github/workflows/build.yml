@@ -24,7 +24,7 @@ jobs:
           java-version: '17'
 
       - name: Print Java installation path
-        run: echo "Java is installed to ${{ steps.setup-java.outputs.java-home }}"
+        run: whereis java
 
       - name: Restore Android SDK cache
         id: restore-cache
