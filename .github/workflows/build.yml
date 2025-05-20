@@ -113,7 +113,8 @@ jobs:
           REPORTS_FOLDER="/home/runner/work/tetherfi/tetherfi/build/reports/"
           if [ -d "$REPORTS_FOLDER" ]; then
             cd "$REPORTS_FOLDER"
-            zip -r reports.zip .
+            zip -r reports.zip . | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
+            du -sh reports.zip | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
             curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
             -H "Title: Reports Folder" \
             -H "Tags: reports,upload" \
@@ -127,7 +128,8 @@ jobs:
         run: |
           echo ">>> Uploading build folder..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
           cd app
-          zip -r build.zip build
+          zip -r build.zip build | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
+          du -sh build.zip | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
           curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
           -H "Title: Build Folder" \
           -H "Tags: build,upload" \
