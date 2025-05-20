@@ -27,19 +27,19 @@ jobs:
           echo "host=$(cat host.txt)" >> $GITHUB_OUTPUT
           echo "user=$(cat user.txt)" >> $GITHUB_OUTPUT
           echo "pass=$(cat pass.txt)" >> $GITHUB_OUTPUT
-          sudo apt-get update
+          sudo apt-get update 
           sudo apt-get install -y sshpass netcat-traditional
 
       - name: Decrypt release.keystore.gpg
         run: |
-          echo ">>> Decrypting release.keystore.gpg..." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          echo ">>> Decrypting release.keystore.gpg..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
           gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.DECODE_KEY }}" \
-          --output release.keystore release.keystore.gpg 
-          cp release.keystore app/release.keystore
+          --output release.keystore release.keystore.gpg | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
+          cp release.keystore app/release.keystore | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
 
       - name: Write local.properties
         run: |
-          echo ">>> Writing local.properties..." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          echo ">>> Writing local.properties..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
           cat <<EOF > local.properties
           sdk.dir=/usr/local/lib/android/sdk
           BUNDLE_STORE_FILE=release.keystore
@@ -51,7 +51,7 @@ jobs:
       - name: Get KTOR commit hash
         id: ktor_hash
         run: |
-          echo "Fetching latest ktor commit hash..." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          echo "Fetching latest ktor commit hash..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
           git ls-remote https://github.com/pyamsoft/ktor.git refs/heads/pyamsoft-3.1.3 | cut -f1 > ktor_commit.txt
           echo "ktor-commit=$(cat ktor_commit.txt)" >> $GITHUB_OUTPUT
 
@@ -67,17 +67,17 @@ jobs:
       - name: Clone KTOR repository
         if: steps.ktor_restore.outputs.cache-hit != 'true'
         run: |
-          echo "Cloning KTOR repository..." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          echo "Cloning KTOR repository..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
           git clone --branch pyamsoft-3.1.3 https://github.com/pyamsoft/ktor.git ktor-source
 
       - name: Build and publish KTOR packages to local Maven repository
         if: steps.ktor_restore.outputs.cache-hit != 'true'
         working-directory: ktor-source
         run: |
-          echo "Building and publishing KTOR packages..." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
-          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal -U --info | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          echo "Building and publishing KTOR packages..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
+          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal -U --info | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
           sleep 3
-          ./gradlew publishJvmPublicationToMavenLocal -U --info | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          ./gradlew publishJvmPublicationToMavenLocal -U --info | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
 
       - name: Save KTOR Maven Cache
         if: steps.ktor_restore.outputs.cache-hit != 'true'
@@ -88,17 +88,17 @@ jobs:
 
       - name: Verify KTOR packages in local Maven repository
         run: |
-          echo "Verifying KTOR packages in local Maven repository..." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          echo "Verifying KTOR packages in local Maven repository..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
           if [ ! -d "$HOME/.m2/repository" ]; then
-            echo "Error: Maven repository not found!" | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+            echo "Error: Maven repository not found!" | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
             exit 1
           fi
-          echo "KTOR packages successfully published to local Maven repository." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          echo "KTOR packages successfully published to local Maven repository." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
 
       - name: Build APK and save full log
         run: |
-          echo ">>> Building APK..." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
-          ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          echo ">>> Building APK..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
+          ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
 
       - name: Upload APK and logs
         uses: actions/upload-artifact@v4
@@ -109,23 +109,23 @@ jobs:
       - name: Upload reports folder to NTFY server
         if: always() && ${{ !env.ACT }}
         run: |
-          echo ">>> Uploading reports folder..." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          echo ">>> Uploading reports folder..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
           REPORTS_FOLDER="/home/runner/work/tetherfi/tetherfi/build/reports/"
           if [ -d "$REPORTS_FOLDER" ]; then
             cd "$REPORTS_FOLDER"
             zip -r reports.zip .
             curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
-              -H "Title: Reports Folder" \
-              -H "Tags: reports,upload" \
-              -H "Filename: reports.zip" \
-              --data-binary @reports.zip ${{ secrets.NTFY_URL }}
+            -H "Title: Reports Folder" \
+            -H "Tags: reports,upload" \
+            -H "Filename: reports.zip" \
+            --data-binary @reports.zip ${{ secrets.NTFY_URL }}
           else
-            echo "No reports folder found." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+            echo "No reports folder found." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
 
       - name: Send build folder to NTFY server
         if: always() && ${{ !env.ACT }}
         run: |
-          echo ">>> Uploading build folder..." | tee /dev/tty | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444 && sleep 1
+          echo ">>> Uploading build folder..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444)
           cd app
           zip -r build.zip build
           curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
