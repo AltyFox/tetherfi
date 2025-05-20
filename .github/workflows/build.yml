@@ -204,8 +204,3 @@ jobs:
         if: always()
         run: |
             echo -e ">>> Action is complete...\n\n\n\n\n\n\n\n\n\n\n" | ~/log_and_send.sh
-            while [ -e "/tmp/log_and_send_buffer" ]; do
-              echo "Waiting for log_and_send buffer file to be deleted..." | ~/log_and_send.sh
-              sleep 2
-            done
-            echo "Buffer file deleted. Exiting." | ~/log_and_send.sh
