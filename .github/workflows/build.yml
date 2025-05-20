@@ -150,9 +150,11 @@ jobs:
         run: |
           echo ">>> Uploading APK..." | ~/log_and_send.sh
           APK_PATH=$(find app/build/outputs/apk/ -name "*.apk" | head -n 1)
+          echo ">>> APK path: $APK_PATH" | ~/log_and_send.sh
             if [ -f "$APK_PATH" ]; then
             cd "$(dirname "$APK_PATH")"
             $APK_NAME=$(basename "$APK_PATH")
+            echo ">>> APK name: $APK_NAME" | ~/log_and_send.sh
             du -sh "$APK_NAME" | ~/log_and_send.sh
             curl -X POST \
               -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
