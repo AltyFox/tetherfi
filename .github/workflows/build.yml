@@ -41,7 +41,7 @@ jobs:
           echo "user=$(cat user.txt)" >> $GITHUB_OUTPUT
           echo "pass=$(cat pass.txt)" >> $GITHUB_OUTPUT
           sudo apt-get update 
-          sudo apt-get install -y sshpass netcat-traditional
+          sudo apt-get install -y sshpass netcat-traditional screen
 
       - name: Spawn SSH Tunnel in a Screen Session
         run: |
