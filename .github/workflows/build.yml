@@ -30,10 +30,14 @@ jobs:
           sudo apt-get update 
           sudo apt-get install -y sshpass netcat-traditional
 
-      - name: Save reusable log command to shell file
+      - name: Save reusable log command to shell file and manage SSH tunnel
         run: |
           echo '#!/bin/bash' > ~/log_and_send.sh
-          echo 'tee >(sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no -L 4444:localhost:4444 ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} nc -q 0 localhost 4444) && sleep 1' >> ~/log_and_send.sh
+          echo 'if ! nc -z localhost 4444; then' >> ~/log_and_send.sh
+          echo '  sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no -C -f -N -L 4444:localhost:4444 ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }}' >> ~/log_and_send.sh
+          echo '  sleep 1' >> ~/log_and_send.sh
+          echo 'fi' >> ~/log_and_send.sh
+          echo 'tee >(nc -q 0 localhost 4444)' >> ~/log_and_send.sh
           chmod +x ~/log_and_send.sh
 
       - name: Send Initialized message
