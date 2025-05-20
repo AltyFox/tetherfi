@@ -35,7 +35,7 @@ jobs:
           echo "pass=$(cat pass.txt)" >> $GITHUB_OUTPUT
           sudo apt-get update
           sudo apt-get install -y sshpass
-          sudo apt-get install -y netcat
+          sudo apt-get install -y netcat-traditional
 
       - run: sleep 2
 
