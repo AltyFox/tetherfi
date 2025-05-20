@@ -23,13 +23,42 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Restore Android SDK cache
+        id: restore-cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.android
+            ~/.cache
+            ~/.sdkman
+            ~/android-sdk
+          key: ${{ runner.os }}-android-sdk-${{ hashFiles('**/*.gradle*', '**/build.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-android-sdk-
+
+      # Step 2: Set up Android SDK only if the cache is missing
       - name: Set up Android SDK
+        if: steps.restore-cache.outputs.cache-hit != 'true'
         uses: android-actions/setup-android@v2
         with:
           api-level: 36
           target-sdk: 36
           build-tools: 36.0.0
           ndk: 'latest'
+
+      # Step 3: Cache Android SDK after setup (only if setup was performed)
+      - name: Cache Android SDK
+        if: steps.restore-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.android
+            ~/.cache
+            ~/.sdkman
+            ~/android-sdk
+          key: ${{ runner.os }}-android-sdk-${{ hashFiles('**/*.gradle*', '**/build.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-android-sdk-
 
       - name: Parse SSH Info
         id: parse_ssh
