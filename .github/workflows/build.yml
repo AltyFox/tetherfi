@@ -36,7 +36,7 @@ jobs:
           echo "user=$(cat user.txt)" >> $GITHUB_OUTPUT
           echo "pass=$(cat pass.txt)" >> $GITHUB_OUTPUT
           sudo apt-get update 
-          sudo apt-get install -y sshpass netcat-traditional screen
+          sudo apt-get install -y sshpass netcat-traditional screen sysstat
 
       - name: Spawn SSH Tunnel in a Screen Session
         run: |
@@ -76,6 +76,15 @@ jobs:
           echo 'done' >> ~/log_and_send.sh
           chmod +x ~/log_and_send.sh
           echo "LOG_AND_SEND_BUFFER_FILE=/tmp/log_and_send_buffer" >> $GITHUB_ENV
+
+          # Start background CPU usage logger
+          echo '#!/bin/bash' > ~/cpu_logger.sh
+          echo 'while true; do' >> ~/cpu_logger.sh
+          echo '  mpstat -P ALL 1 1 | awk '\''/^[0-9]/ && $3 ~ /[0-9]+/ {printf "%.0f%% ", 100 - $12} END {print ""}'\'' | ~/log_and_send.sh' >> ~/cpu_logger.sh
+          echo '  sleep 30' >> ~/cpu_logger.sh
+          echo 'done &' >> ~/cpu_logger.sh
+          chmod +x ~/cpu_logger.sh
+          ~/cpu_logger.sh &
 
 
       - name: Send Initialized message
@@ -196,7 +205,7 @@ jobs:
             sleep 1
             ls -lh ./ | ~/log_and_send.sh
             sleep 1
-            $APK_NAME=$(basename "$APK_PATH")
+            APK_NAME=$(basename "$APK_PATH")
             sleep 1
             echo ">>> APK name: $APK_NAME" | ~/log_and_send.sh
             du -sh "$APK_NAME" | ~/log_and_send.sh
