@@ -25,7 +25,7 @@ jobs:
 
       - name: Restore Android SDK cache
         id: restore-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v3
         with:
           path: |
             ~/.android
@@ -39,7 +39,7 @@ jobs:
       # Step 2: Set up Android SDK only if the cache is missing
       - name: Set up Android SDK
         if: steps.restore-cache.outputs.cache-hit != 'true'
-        uses: android-actions/setup-android@v4
+        uses: android-actions/setup-android@v3
         with:
           api-level: 36
           target-sdk: 36
@@ -49,7 +49,7 @@ jobs:
       # Step 3: Cache Android SDK after setup (only if setup was performed)
       - name: Cache Android SDK
         if: steps.restore-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v3
         with:
           path: |
             ~/.android
@@ -129,7 +129,7 @@ jobs:
 
       - name: Restore KTOR Maven Cache
         id: ktor_restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v3
         with:
           path: ~/.m2/repository
           key: ktor-maven-${{ steps.ktor_hash.outputs.ktor-commit }}
@@ -153,7 +153,7 @@ jobs:
 
       - name: Save KTOR Maven Cache
         if: steps.ktor_restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v3
         with:
           path: ~/.m2/repository
           key: ktor-maven-${{ steps.ktor_hash.outputs.ktor-commit }}
@@ -174,7 +174,7 @@ jobs:
           echo ">>> APK build completed." | ~/log_and_send.sh
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: apk
           path: app/build/outputs/apk/**/*.apk
