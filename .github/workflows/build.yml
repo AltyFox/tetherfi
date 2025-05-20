@@ -23,9 +23,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Print Java installation path
-        run: whereis java
-
       - name: Restore Android SDK cache
         id: restore-cache
         uses: actions/cache/restore@v3
