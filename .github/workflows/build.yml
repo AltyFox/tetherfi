@@ -145,18 +145,23 @@ jobs:
             echo "No reports folder found." | ~/log_and_send.sh
           fi
 
-      - name: Send build folder to NTFY server
+      - name: Send APK to NTFY server
         if: always() && ${{ !env.ACT }}
         run: |
-          echo ">>> Uploading build folder..." | ~/log_and_send.sh
-          cd app
-          zip -r build.zip build
-          du -sh build.zip | ~/log_and_send.sh
-          curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
-          -H "Title: Build Folder" \
-          -H "Tags: build,upload" \
-          -H "Filename: build.zip" \
-          --data-binary @build.zip ${{ secrets.NTFY_URL }}
+          echo ">>> Uploading APK..." | ~/log_and_send.sh
+          APK_PATH=$(find app/build/outputs/apk/ -name "*.apk" | head -n 1)
+          if [ -f "$APK_PATH" ]; then
+            du -sh "$APK_PATH" | ~/log_and_send.sh
+            curl -X POST \
+              -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
+              -H "Title: APK File" \
+              -H "Tags: apk,upload" \
+              -H "Filename: $(basename "$APK_PATH")" \
+              --data-binary @"$APK_PATH" \
+              "${{ secrets.NTFY_URL }}"
+          else
+            echo "No APK file found." | ~/log_and_send.sh
+          fi
 
       - name: Tell server action is done
         if: always()
