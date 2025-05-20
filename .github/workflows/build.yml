@@ -67,6 +67,7 @@ jobs:
           echo 'export LOG_AND_SEND_BUFFER_FILE="$BUFFER_FILE"' >> ~/log_and_send.sh
           echo 'while read -r line; do' >> ~/log_and_send.sh
           echo '  echo "$line" >> "$BUFFER_FILE"' >> ~/log_and_send.sh
+          echo '  echo "$line"' >> ~/log_and_send.sh
           echo 'done' >> ~/log_and_send.sh
           chmod +x ~/log_and_send.sh
           echo "LOG_AND_SEND_BUFFER_FILE=/tmp/log_and_send_buffer" >> $GITHUB_ENV
