@@ -33,7 +33,7 @@ jobs:
       - name: Save reusable log command to shell file
         run: |
           echo '#!/bin/bash' > ~/log_and_send.sh
-          echo 'tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1' >> ~/log_and_send.sh
+          echo 'tee >(gzip -c | sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} "cat > ~/log.gz") && sleep 1' >> ~/log_and_send.sh
           chmod +x ~/log_and_send.sh
 
       - name: Touch startTime file on remote host
