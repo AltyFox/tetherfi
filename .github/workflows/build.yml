@@ -149,7 +149,7 @@ jobs:
       - name: Build APK and save full log
         run: |
           echo ">>> Building APK..." | ~/log_and_send.sh
-          echo "./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off" | ~/log_and_send.sh
+          ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off | ~/log_and_send.sh
           echo ">>> APK build completed." | ~/log_and_send.sh
 
       - name: Upload APK
