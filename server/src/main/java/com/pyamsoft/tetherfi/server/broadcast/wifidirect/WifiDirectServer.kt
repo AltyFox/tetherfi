@@ -159,7 +159,7 @@ internal constructor(
       val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "id"))
       val exitCode = process.waitFor()
       if (exitCode != 0) {
-        Timber.e { "Failed to acquire root permissions. Exit code: $exitCode" }
+        Timber.e(SecurityException("Root permissions are required but not granted.")) { "Failed to acquire root permissions. Exit code: $exitCode" }
         throw SecurityException("Root permissions are required but not granted.")
       }
 
