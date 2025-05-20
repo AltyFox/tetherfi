@@ -30,6 +30,13 @@ jobs:
           sudo apt-get update 
           sudo apt-get install -y sshpass netcat-traditional
 
+      - name: Touch startTime file on remote host
+        run: |
+            echo ">>> Creating startTime file on remote host..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
+            sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
+            ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
+            "touch ~/startTime"
+
       - name: Decrypt release.keystore.gpg
         run: |
           echo ">>> Decrypting release.keystore.gpg..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
