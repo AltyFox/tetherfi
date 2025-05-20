@@ -149,20 +149,22 @@ internal constructor(
 
     Timber.d { "Creating WifiP2PManager Channel" }
 
-    // This can return null if initialization fails
-    return wifiP2PManager.initialize(
-        appContext,
-        Looper.getMainLooper(),
-    ) {
-      // Before we used to kill the Network
-      //
-      // But now we do nothing - if you Swipe Away the app from recents,
-      // the p2p manager will die, but when it comes back we want everything to
-      // attempt to run again so we leave this around.
-      //
-      // Any other unexpected death like Airplane mode or Wifi off should be covered by the receiver
-      // so we should never unintentionally leak the service
-      Timber.d { "WifiP2PManager Channel died! Do nothing :D" }
+    // Use a wake lock to ensure the phone stays awake during initialization
+    val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
+    val wakeLock = powerManager?.newWakeLock(android.os.PowerManager.PARTIAL_WAKE_LOCK, "WifiDirectServer::ChannelInit")
+    wakeLock?.acquire(10_000) // Acquire for 10 seconds
+
+    try {
+      // This can return null if initialization fails
+      return wifiP2PManager.initialize(
+          appContext,
+          Looper.getMainLooper(),
+      ) {
+        Timber.d { "WifiP2PManager Channel died! Do nothing :D" }
+      }
+    } finally {
+      // Release the wake lock after initialization
+      wakeLock?.release()
     }
   }
 
