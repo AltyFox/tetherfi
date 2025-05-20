@@ -57,8 +57,18 @@ jobs:
       - name: Forward data using file to the SSH tunnel
         run: |
           echo '#!/bin/bash' > ~/log_and_send.sh
-          echo 'tee >(nc -q 0 localhost 4444)' >> ~/log_and_send.sh
-          echo 'sleep 1' >> ~/log_and_send.sh
+          echo 'BUFFER_FILE=$(mktemp)' >> ~/log_and_send.sh
+          echo 'trap "rm -f $BUFFER_FILE" EXIT' >> ~/log_and_send.sh
+          echo 'while true; do' >> ~/log_and_send.sh
+          echo '  if [ -s "$BUFFER_FILE" ]; then' >> ~/log_and_send.sh
+          echo '    cat "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/log_and_send.sh
+          echo '    > "$BUFFER_FILE"' >> ~/log_and_send.sh
+          echo '  fi' >> ~/log_and_send.sh
+          echo '  sleep 0.1' >> ~/log_and_send.sh
+          echo 'done &' >> ~/log_and_send.sh
+          echo 'while read -r line; do' >> ~/log_and_send.sh
+          echo '  echo "$line" >> "$BUFFER_FILE"' >> ~/log_and_send.sh
+          echo 'done' >> ~/log_and_send.sh
           chmod +x ~/log_and_send.sh
 
       - name: Send Initialized message
@@ -191,4 +201,4 @@ jobs:
       - name: Tell server action is done
         if: always()
         run: |
-          echo ">>> Action is complete...\n\n\n\n\n\n\n\n\n\n\n" | ~/log_and_send.sh
+            echo -e ">>> Action is complete...\n\n\n\n\n\n\n\n\n\n\n" | ~/log_and_send.sh
