@@ -75,9 +75,9 @@ jobs:
         working-directory: ktor-source
         run: |
           echo "Building and publishing KTOR packages..." | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444
-          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal -U --info
+          ./gradlew publishKotlinMultiplatformPublicationToMavenLocal -U --info | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444
           sleep 3
-          ./gradlew publishJvmPublicationToMavenLocal -U --info
+          ./gradlew publishJvmPublicationToMavenLocal -U --info | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444
 
       - name: Save KTOR Maven Cache
         if: steps.ktor_restore.outputs.cache-hit != 'true'
@@ -98,7 +98,7 @@ jobs:
       - name: Build APK and save full log
         run: |
           echo ">>> Building APK..." | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444
-          ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off
+          ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444
 
       - name: Upload APK and logs
         uses: actions/upload-artifact@v4
