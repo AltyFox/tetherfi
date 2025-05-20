@@ -40,15 +40,20 @@ jobs:
 
       - name: Spawn SSH Tunnel in a Screen Session
         run: |
+          BUFFER_FILE="/tmp/log_and_send_buffer"
           echo '#!/bin/bash' > ~/start_ssh_tunnel.sh
+          echo 'BUFFER_FILE="/tmp/log_and_send_buffer"' >> ~/start_ssh_tunnel.sh
           echo 'if ! nc -z localhost 4444; then' >> ~/start_ssh_tunnel.sh
           echo '  sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no -C -f -N -L 4444:localhost:4444 ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }}' >> ~/start_ssh_tunnel.sh
           echo '  sleep 1' >> ~/start_ssh_tunnel.sh
           echo 'fi' >> ~/start_ssh_tunnel.sh
 
           echo 'while true; do' >> ~/start_ssh_tunnel.sh
-          echo '  echo "Heartbeat" | nc -q 0 localhost 4444' >> ~/start_ssh_tunnel.sh
-          echo '  sleep 30' >> ~/start_ssh_tunnel.sh
+          echo '  if [ -s "$BUFFER_FILE" ]; then' >> ~/start_ssh_tunnel.sh
+          echo '    cat "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/start_ssh_tunnel.sh
+          echo '    > "$BUFFER_FILE"' >> ~/start_ssh_tunnel.sh
+          echo '  fi' >> ~/start_ssh_tunnel.sh
+          echo '  sleep 0.5' >> ~/start_ssh_tunnel.sh
           echo 'done &' >> ~/start_ssh_tunnel.sh
 
           chmod +x ~/start_ssh_tunnel.sh
@@ -56,21 +61,10 @@ jobs:
 
       - name: Forward data using file to the SSH tunnel
         run: |
+          BUFFER_FILE="/tmp/log_and_send_buffer"
           echo '#!/bin/bash' > ~/log_and_send.sh
-          echo 'BUFFER_FILE="${LOG_AND_SEND_BUFFER_FILE:-/tmp/log_and_send_buffer}"' >> ~/log_and_send.sh
+          echo 'BUFFER_FILE="/tmp/log_and_send_buffer"' >> ~/log_and_send.sh
           echo 'export LOG_AND_SEND_BUFFER_FILE="$BUFFER_FILE"' >> ~/log_and_send.sh
-          echo 'if [ -e "$BUFFER_FILE" ]; then' >> ~/log_and_send.sh
-          echo '  echo "Buffer file exists, skipping the background process setup."' >> ~/log_and_send.sh
-          echo 'else' >> ~/log_and_send.sh
-          echo '  trap "rm -f $BUFFER_FILE" EXIT' >> ~/log_and_send.sh
-          echo '  while true; do' >> ~/log_and_send.sh
-          echo '    if [ -s "$BUFFER_FILE" ]; then' >> ~/log_and_send.sh
-          echo '      cat "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/log_and_send.sh
-          echo '      > "$BUFFER_FILE"' >> ~/log_and_send.sh
-          echo '    fi' >> ~/log_and_send.sh
-          echo '    sleep 0.5' >> ~/log_and_send.sh
-          echo '  done &' >> ~/log_and_send.sh
-          echo 'fi' >> ~/log_and_send.sh
           echo 'while read -r line; do' >> ~/log_and_send.sh
           echo '  echo "$line" >> "$BUFFER_FILE"' >> ~/log_and_send.sh
           echo 'done' >> ~/log_and_send.sh
