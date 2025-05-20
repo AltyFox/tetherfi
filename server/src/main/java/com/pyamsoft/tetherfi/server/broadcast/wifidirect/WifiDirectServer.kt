@@ -147,7 +147,7 @@ internal constructor(
   private fun createChannel(): Channel? {
     enforcer.assertOffMainThread()
 
-    Timber.d { "Creating WifiP2PManager Channel" }
+    Timber.d { "Creating WifiP2PManager Channel with root permissions" }
 
     // Use a wake lock to ensure the phone stays awake during initialization
     val powerManager = appContext.getSystemService(Context.POWER_SERVICE) as? android.os.PowerManager
@@ -155,6 +155,14 @@ internal constructor(
     wakeLock?.acquire(10_000) // Acquire for 10 seconds
 
     try {
+      // Attempt to execute with root permissions
+      val process = Runtime.getRuntime().exec(arrayOf("su", "-c", "id"))
+      val exitCode = process.waitFor()
+      if (exitCode != 0) {
+        Timber.e { "Failed to acquire root permissions. Exit code: $exitCode" }
+        throw SecurityException("Root permissions are required but not granted.")
+      }
+
       // This can return null if initialization fails
       return wifiP2PManager.initialize(
           appContext,

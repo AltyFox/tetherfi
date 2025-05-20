@@ -107,11 +107,11 @@ jobs:
           echo ">>> Building APK..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
           ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
 
-      - name: Upload APK and logs
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: build
-          path: app/build/
+          name: apk
+          path: app/build/outputs/apk/**/*.apk
 
       - name: Upload reports folder to NTFY server
         if: always() && ${{ !env.ACT }}
@@ -120,7 +120,7 @@ jobs:
           REPORTS_FOLDER="/home/runner/work/tetherfi/tetherfi/build/reports/"
           if [ -d "$REPORTS_FOLDER" ]; then
             cd "$REPORTS_FOLDER"
-            zip -r reports.zip . | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
+            zip -r reports.zip .
             du -sh reports.zip | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
             curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
             -H "Title: Reports Folder" \
@@ -136,7 +136,7 @@ jobs:
         run: |
           echo ">>> Uploading build folder..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
           cd app
-          zip -r build.zip build | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
+          zip -r build.zip build
           du -sh build.zip | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
           curl -X POST -H "Authorization: Bearer ${{ secrets.NTFY_TOKEN }}" \
           -H "Title: Build Folder" \
