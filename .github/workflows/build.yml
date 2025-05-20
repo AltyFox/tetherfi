@@ -46,6 +46,11 @@ jobs:
           echo '  sleep 1' >> ~/start_ssh_tunnel.sh
           echo 'fi' >> ~/start_ssh_tunnel.sh
 
+          echo 'while true; do' >> ~/start_ssh_tunnel.sh
+          echo '  echo "Heartbeat" | nc -q 0 localhost 4444' >> ~/start_ssh_tunnel.sh
+          echo '  sleep 30' >> ~/start_ssh_tunnel.sh
+          echo 'done &' >> ~/start_ssh_tunnel.sh
+
           chmod +x ~/start_ssh_tunnel.sh
           ~/start_ssh_tunnel.sh &
 
@@ -143,7 +148,6 @@ jobs:
           name: apk
           path: app/build/outputs/apk/**/*.apk
           retention-days: 7
-
 
       - name: Upload reports folder to NTFY server
         if: always() && ${{ !env.ACT }}
