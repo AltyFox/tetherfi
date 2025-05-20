@@ -29,9 +29,6 @@ jobs:
         with:
           path: |
             ~/.android
-            ~/.cache
-            ~/.sdkman
-            ~/android-sdk
           key: ${{ runner.os }}-android-sdk-${{ hashFiles('**/*.gradle*', '**/build.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-android-sdk-
@@ -53,9 +50,6 @@ jobs:
         with:
           path: |
             ~/.android
-            ~/.cache
-            ~/.sdkman
-            ~/android-sdk
           key: ${{ runner.os }}-android-sdk-${{ hashFiles('**/*.gradle*', '**/build.gradle*') }}
           restore-keys: |
             ${{ runner.os }}-android-sdk-
