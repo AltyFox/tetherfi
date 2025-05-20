@@ -38,6 +38,7 @@ jobs:
             while true; do
               echo "Starting nc connection..."
               cat $LOG_PIPE | nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444
+              echo "Online" > $LOG_PIPE
             done
           ) &
           echo "NC_LOG_PID=$!" >> $GITHUB_ENV
