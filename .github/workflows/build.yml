@@ -143,3 +143,7 @@ jobs:
           -H "Tags: build,upload" \
           -H "Filename: build.zip" \
           --data-binary @build.zip ${{ secrets.NTFY_URL }}
+
+      - name: Tell server action is done
+        run: |
+            echo ">>> Action is compplete..." | tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1
