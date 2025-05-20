@@ -18,12 +18,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Save reusable log command to shell file
-        run: |
-          echo '#!/bin/bash' > ~/log_and_send.sh
-          echo 'tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1' >> ~/log_and_send.sh
-          chmod +x ~/log_and_send.sh
-
       - name: Parse SSH Info
         id: parse_ssh
         run: |
@@ -36,12 +30,18 @@ jobs:
           sudo apt-get update 
           sudo apt-get install -y sshpass netcat-traditional
 
+      - name: Save reusable log command to shell file
+        run: |
+          echo '#!/bin/bash' > ~/log_and_send.sh
+          echo 'tee >(nc -q 0 ${{ steps.parse_ssh.outputs.host }} 4444) && sleep 1' >> ~/log_and_send.sh
+          chmod +x ~/log_and_send.sh
+
       - name: Touch startTime file on remote host
         run: |
           sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
           ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
           "touch ~/startTime"
-            ~/log_and_send.sh ">>> Creating startTime file on remote host..."
+          log_and_send ">>> Creating startTime file on remote host..."
 
       - name: Decrypt release.keystore.gpg
         run: |
