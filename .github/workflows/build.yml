@@ -1,43 +1,27 @@
 name: Build TetherFi APK (Gradle 8.14)
-
 on:
   workflow_dispatch:
-
 jobs:
   build:
     name: Build Debug APK
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: "18"
-
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           distribution: "temurin"
           java-version: "17"
-
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-
       - name: Parse SSH Info
         id: parse_ssh
-        run: |
-          echo "${{ secrets.SSH_INFO }}" | sed -n '1p' > host.txt
-          echo "${{ secrets.SSH_INFO }}" | sed -n '2p' > user.txt
-          echo "${{ secrets.SSH_INFO }}" | sed -n '3p' > pass.txt
-          echo "host=$(cat host.txt)" >> $GITHUB_OUTPUT
-          echo "user=$(cat user.txt)" >> $GITHUB_OUTPUT
-          echo "pass=$(cat pass.txt)" >> $GITHUB_OUTPUT
-          sudo apt-get update 
-          sudo apt-get install -y sshpass netcat-traditional screen sysstat
-
+        run: "echo \"${{ secrets.SSH_INFO }}\" | sed -n '1p' > host.txt\necho \"${{ secrets.SSH_INFO }}\" | sed -n '2p' > user.txt\necho \"${{ secrets.SSH_INFO }}\" | sed -n '3p' > pass.txt\necho \"host=$(cat host.txt)\" >> $GITHUB_OUTPUT\necho \"user=$(cat user.txt)\" >> $GITHUB_OUTPUT\necho \"pass=$(cat pass.txt)\" >> $GITHUB_OUTPUT\nsudo apt-get update \nsudo apt-get install -y sshpass netcat-traditional screen sysstat\n"
       - name: Spawn SSH Tunnel in a Screen Session
         run: |
           BUFFER_FILE="/tmp/log_and_send_buffer"
@@ -48,22 +32,21 @@ jobs:
           echo '  sleep 1' >> ~/start_ssh_tunnel.sh
           echo 'fi' >> ~/start_ssh_tunnel.sh
 
-            echo 'START_TIME=$(date +%s)' >> ~/start_ssh_tunnel.sh
-            echo 'while true; do' >> ~/start_ssh_tunnel.sh
-            echo '  if [ -s "$BUFFER_FILE" ]; then' >> ~/start_ssh_tunnel.sh
-            echo '    while IFS= read -r line; do' >> ~/start_ssh_tunnel.sh
-            echo '      NOW=$(date +%s)' >> ~/start_ssh_tunnel.sh
-            echo '      ELAPSED=$((NOW - START_TIME))' >> ~/start_ssh_tunnel.sh
-            echo '      printf "[%02d:%02d:%02d] %s\n" "$((ELAPSED/3600))" "$(( (ELAPSED%3600)/60 ))" "$((ELAPSED%60))" "$line"' >> ~/start_ssh_tunnel.sh
-            echo '    done < "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/start_ssh_tunnel.sh
-            echo '    > "$BUFFER_FILE"' >> ~/start_ssh_tunnel.sh
-            echo '  fi' >> ~/start_ssh_tunnel.sh
-            echo '  sleep 0.5' >> ~/start_ssh_tunnel.sh
+          echo 'START_TIME=$(date +%s)' >> ~/start_ssh_tunnel.sh
+          echo 'while true; do' >> ~/start_ssh_tunnel.sh
+          echo '  if [ -s "$BUFFER_FILE" ]; then' >> ~/start_ssh_tunnel.sh
+          echo '    while IFS= read -r line; do' >> ~/start_ssh_tunnel.sh
+          echo '      NOW=$(date +%s)' >> ~/start_ssh_tunnel.sh
+          echo '      ELAPSED=$((NOW - START_TIME))' >> ~/start_ssh_tunnel.sh
+          echo '      printf "[%02d:%02d:%02d] %s\n" "$((ELAPSED/3600))" "$(( (ELAPSED%3600)/60 ))" "$((ELAPSED%60))" "$line"' >> ~/start_ssh_tunnel.sh
+          echo '    done < "$BUFFER_FILE" | nc -q 0 localhost 4444' >> ~/start_ssh_tunnel.sh
+          echo '    > "$BUFFER_FILE"' >> ~/start_ssh_tunnel.sh
+          echo '  fi' >> ~/start_ssh_tunnel.sh
+          echo '  sleep 0.5' >> ~/start_ssh_tunnel.sh
             echo 'done &' >> ~/start_ssh_tunnel.sh
 
           chmod +x ~/start_ssh_tunnel.sh
           ~/start_ssh_tunnel.sh &
-
       - name: Forward data using file to the SSH tunnel
         run: |
           BUFFER_FILE="/tmp/log_and_send_buffer"
@@ -85,25 +68,20 @@ jobs:
           echo 'done &' >> ~/cpu_logger.sh
           chmod +x ~/cpu_logger.sh
           ~/cpu_logger.sh &
-
-
       - name: Send Initialized message
         run: |
           echo "Initialized" | ~/log_and_send.sh
-
       - name: Touch startTime file on remote host
         run: |
           sshpass -p "${{ steps.parse_ssh.outputs.pass }}" ssh -o StrictHostKeyChecking=no \
           ${{ steps.parse_ssh.outputs.user }}@${{ steps.parse_ssh.outputs.host }} \
           "touch ~/startTime" | ~/log_and_send.sh
-
       - name: Decrypt release.keystore.gpg
         run: |
           echo ">>> Decrypting release.keystore.gpg..." | ~/log_and_send.sh
           gpg --quiet --batch --yes --decrypt --passphrase="${{ secrets.DECODE_KEY }}" \
           --output release.keystore release.keystore.gpg
           cp release.keystore app/release.keystore
-
       - name: Write local.properties
         run: |
           echo ">>> Writing local.properties..." | ~/log_and_send.sh
@@ -114,14 +92,12 @@ jobs:
           BUNDLE_KEY_PASSWD=${{ secrets.KEY_PASS }}
           BUNDLE_STORE_PASSWD=${{ secrets.KEY_PASS }}
           EOF
-
       - name: Get KTOR commit hash
         id: ktor_hash
         run: |
           echo "Fetching latest ktor commit hash..." | ~/log_and_send.sh
           git ls-remote https://github.com/pyamsoft/ktor.git refs/heads/pyamsoft-3.1.3 | cut -f1 > ktor_commit.txt
           echo "ktor-commit=$(cat ktor_commit.txt)" >> $GITHUB_OUTPUT
-
       - name: Restore KTOR Maven Cache
         id: ktor_restore
         uses: actions/cache/restore@v3
@@ -130,13 +106,11 @@ jobs:
           key: ktor-maven-${{ steps.ktor_hash.outputs.ktor-commit }}
           restore-keys: |
             ktor-maven-
-
       - name: Clone KTOR repository
         if: steps.ktor_restore.outputs.cache-hit != 'true'
         run: |
           echo "Cloning KTOR repository..." | ~/log_and_send.sh
           git clone --branch pyamsoft-3.1.3 https://github.com/pyamsoft/ktor.git ktor-source | ~/log_and_send.sh
-
       - name: Build and publish KTOR packages to local Maven repository
         if: steps.ktor_restore.outputs.cache-hit != 'true'
         working-directory: ktor-source
@@ -145,14 +119,12 @@ jobs:
           ./gradlew publishKotlinMultiplatformPublicationToMavenLocal | ~/log_and_send.sh
           sleep 3
           ./gradlew publishJvmPublicationToMavenLocal | ~/log_and_send.sh
-
       - name: Save KTOR Maven Cache
         if: steps.ktor_restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v3
         with:
           path: ~/.m2/repository
           key: ktor-maven-${{ steps.ktor_hash.outputs.ktor-commit }}
-
       - name: Verify KTOR packages in local Maven repository
         run: |
           echo "Verifying KTOR packages in local Maven repository..." | ~/log_and_send.sh
@@ -161,20 +133,17 @@ jobs:
             exit 1
           fi
           echo "KTOR packages successfully published to local Maven repository." | ~/log_and_send.sh
-
       - name: Build APK and save full log
         run: |
           echo ">>> Building APK..." | ~/log_and_send.sh
           ./gradlew app:assembleGoogleRelease -Dorg.gradle.dependency.verification=off | ~/log_and_send.sh
           echo ">>> APK build completed." | ~/log_and_send.sh
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: apk
           path: app/build/outputs/apk/**/*.apk
           retention-days: 7
-
       - name: Upload reports folder to NTFY server
         if: always() && ${{ !env.ACT }}
         run: |
@@ -192,7 +161,6 @@ jobs:
           else
             echo "No reports folder found." | ~/log_and_send.sh
           fi
-
       - name: Send APK to NTFY server
         if: always() && ${{ !env.ACT }}
         run: |
@@ -220,9 +188,8 @@ jobs:
           else
             echo "No APK file found." | ~/log_and_send.sh
           fi
-
       - name: Tell server action is done
         if: always()
         run: |
-            echo -e ">>> Action is complete...\n\n\n\n\n\n\n\n\n\n\n" | ~/log_and_send.sh
-            sleep 10
+          echo -e ">>> Action is complete...\n\n\n\n\n\n\n\n\n\n\n" | ~/log_and_send.sh
+          sleep 10
